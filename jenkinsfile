@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+    environment{
+        SCANNER_HOME= tool 'sonar-scanner'
+    }
+    stages {
+        stage('git checkout') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/bvenkydevops/Valentine-Day-DevOps-Project.git']])
+            }
+        }
+        stage('trivy filesystem scan') {
+            steps {
+              sh 'trivy fs --format table -o trivy-fs-report.html .'  
+            }
+        }
+        stage('SonarQube Scanner') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                sh '$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=Valentain -Dsonar.projectName=Valentain'  
+             }
+            }
+        } 
+        /*
+        stage('Docker images') {
+            steps {
+               withDockerRegistry(credentialsId: 'docker-credentails', toolName: 'docker') {
+                   sh 'docker build -t bojjavenkatesh67/valentine:v1 .'
+                 }
+            }
+        }
+        stage('Trivy Scan Docker image') {
+            steps {
+                sh 'trivy image --format json -o trivy-image-report.json bojjavenkatesh67/valentine:v1'
+            }
+        }
+        stage('push Docker Images') {
+            steps {
+              withDockerRegistry(credentialsId: 'docker-credentails', toolName: 'docker') {
+                   sh 'docker push  bojjavenkatesh67/valentine:v1'
+                 }   
+            }
+        }
+        stage('Deployto container') {
+            steps {
+               sh 'docker run -d -p 8081:80 bojjavenkatesh67/valentine:v1'
+            }
+        }
+        */
+    }
+}
